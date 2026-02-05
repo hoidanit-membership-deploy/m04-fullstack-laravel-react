@@ -8,7 +8,6 @@ services:
       - "27017"
     volumes:
       - mongo_data:/data/db
-    command: ["mongod", "--wiredTigerCacheSizeGB", "0.25"]
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
       interval: 30s
