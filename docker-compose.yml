@@ -25,9 +25,7 @@ services:
 
   # Laravel Backend
   backend:
-    build:
-      context: ./backend-laravel
-      dockerfile: Dockerfile
+    image: hoidanitreal/deploy-m04-fullstack-be-laravel-only
     container_name: backend
     restart: unless-stopped
     expose:
@@ -60,11 +58,7 @@ services:
 
   # React Frontend
   frontend:
-    build:
-      context: ./frontend-react
-      dockerfile: Dockerfile
-      args:
-        VITE_API_URL: /api/v1
+    image: hoidanitreal/deploy-m04-fullstack-fe-react-only
     container_name: frontend
     restart: unless-stopped
     expose:
