@@ -8,7 +8,7 @@ services:
       - "27017"
     volumes:
       - mongo_data:/data/db
-    command: ["mongod", "--wiredTigerCacheSizeGB", "0.1"]
+    command: ["mongod", "--wiredTigerCacheSizeGB", "0.25"]
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
       interval: 30s
@@ -19,10 +19,10 @@ services:
       resources:
         limits:
           cpus: "0.30"
-          memory: 256M
+          memory: 380M
         reservations:
           cpus: "0.10"
-          memory: 150M
+          memory: 280M
 
   # Laravel Backend
   backend:
