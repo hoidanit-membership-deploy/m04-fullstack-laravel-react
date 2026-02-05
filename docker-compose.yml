@@ -1,27 +1,28 @@
 services:
   # MongoDB
   mongodb:
-    image: mongo:8.2.4
+    image: mongo:7.0
     container_name: mongodb
     restart: unless-stopped
     expose:
       - "27017"
     volumes:
       - mongo_data:/data/db
+    command: ["mongod", "--wiredTigerCacheSizeGB", "0.1"]
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
     deploy:
       resources:
         limits:
           cpus: "0.30"
-          memory: 300M
+          memory: 256M
         reservations:
-          cpus: "0.15"
-          memory: 200M
+          cpus: "0.10"
+          memory: 150M
 
   # Laravel Backend
   backend:
@@ -43,18 +44,18 @@ services:
         condition: service_healthy
     healthcheck:
       test: [ "CMD", "php", "artisan", "about", "--only=environment" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
     deploy:
       resources:
         limits:
           cpus: "0.30"
-          memory: 256M
+          memory: 200M
         reservations:
-          cpus: "0.15"
-          memory: 128M
+          cpus: "0.10"
+          memory: 100M
 
   # React Frontend
   frontend:
@@ -65,14 +66,14 @@ services:
       - "3000"
     healthcheck:
       test: [ "CMD", "wget", "--spider", "--quiet", "http://localhost:3000" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
     deploy:
       resources:
         limits:
-          cpus: "0.15"
+          cpus: "0.20"
           memory: 128M
         reservations:
           cpus: "0.05"
@@ -101,10 +102,10 @@ services:
       resources:
         limits:
           cpus: "0.10"
-          memory: 64M
+          memory: 48M
         reservations:
           cpus: "0.05"
-          memory: 32M
+          memory: 24M
 
 volumes:
   mongo_data:
