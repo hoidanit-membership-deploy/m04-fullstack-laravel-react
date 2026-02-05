@@ -1,0 +1,89 @@
+services:
+  # MongoDB
+  mongodb:
+    image: mongo:8.2.4
+    container_name: mongodb
+    restart: unless-stopped
+    expose:
+      - "27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Laravel Backend
+  backend:
+    build:
+      context: ./backend-laravel
+      dockerfile: Dockerfile
+    container_name: backend
+    restart: unless-stopped
+    expose:
+      - "8000"
+    environment:
+      APP_NAME: ${APP_NAME:-Laravel}
+      APP_ENV: ${APP_ENV:-local}
+      APP_DEBUG: ${APP_DEBUG:-true}
+      APP_KEY: ${APP_KEY:-}
+      DB_CONNECTION: mongodb
+      DB_DSN: mongodb://mongodb:27017
+      DB_DATABASE: ${DB_DATABASE:-laravel_app}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "php", "artisan", "about", "--only=environment" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend-react
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api/v1
+    container_name: frontend
+    restart: unless-stopped
+    expose:
+      - "3000"
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "--quiet", "http://localhost:3000" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Caddy Reverse Proxy
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - ./localhost-Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+
+volumes:
+  mongo_data:
+  caddy_data:
+  caddy_config:
+
+    # docker compose -f localhost-build.yml -p hoidanit-fullstack-laravel-react up -d
+
